@@ -1,0 +1,40 @@
+---
+title: "Exercise_1"
+author: "Junyi_Liu"
+date: "2022-09-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Here we set the random state and generate random variable and Design Matrix
+```{r Generate random variable and Design Matrix}
+set.seed(0)
+Y<-rnorm(100)
+X<-matrix(rnorm(5000),nrow=100)
+```
+
+Here we regress Y on X and see the result
+```{r regression model}
+model_lm <- lm(Y~X-1)
+summary(model_lm)
+```
+We can see from the results that the R-squared is 0.5829 and is about 0.5.
+
+
+Here we try to find the variable whose p value is smaller than 0.1.
+```{r}
+new_r= summary(model_lm)$coefficients [,'Pr(>|t|)']<0.1
+
+```
+
+Here we regress a new model and see the result
+```{r new model}
+model_lm_new <- lm(Y~X[,new_r]-1)
+summary(model_lm_new)
+```
+We can see from the results that R-squared is 0.185 and is about 0.2.
