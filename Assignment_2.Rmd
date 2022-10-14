@@ -57,7 +57,7 @@ plot_kdes <- function(bw){
   error_r <- mean((y_true-y_hat_r)^2)
   
   plot(density(density_my, kernel="gaussian", bw=bw),
-       main=paste("BW=",bw,"MSE:g=",round(error_g,5),":e=",round(error_e,5),":r=",round(error_r,5)), xlab="time [min]")
+       main=paste("BW=",bw,"error:g=",round(error_g,5),":e=",round(error_e,5),":r=",round(error_r,5)), xlab="time [min]")
   lines(density(density_my, kernel="epanechnikov", bw=bw), col=4)
   lines(density(density_my, kernel="rectangular", bw=bw), col=2)
   legend("topleft", col=c(1, 4, 2), lty=1, cex =0.45, legend=c("Gauss", "Epan", "rect"))
@@ -118,7 +118,7 @@ MSE<-data.frame(x_,MSE_g,MSE_r,MSE_e);MSE
 ```
 Plot to see MSE of function with different Kernel and Bandwidth.
 ```{r}
-plot(MSE_g~x_,pch=15,cex=0.8,col="DarkTurquoise",ylab="MSE",xlab = "BandWidth",ylim = c(0,0.01),main="MSE of function with different Kernal and Bandwidth")
+plot(MSE_g~x_,pch=15,cex=0.8,col="DarkTurquoise",ylab="Error",xlab = "BandWidth",ylim = c(0,0.01),main="Error of function with different Kernal and Bandwidth")
 points(x_,MSE_r,pch=16,col="DeepPink",cex=0.8)
 points(x_,MSE_e,pch=17,col="RosyBrown",cex=0.8)
 legend(0.7,0.0075,c("Gauss","Epan","Eect"),cex =0.5,col=c("DarkTurquoise","DeepPink","RosyBrown"),text.col=c("DarkTurquoise","DeepPink","RosyBrown"),pch=c(15,16,17),lty=c(1,2,3))
