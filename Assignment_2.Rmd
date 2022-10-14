@@ -1,0 +1,126 @@
+---
+title: "Assignment2"
+author: "Junyi_Liu"
+date: "2022-10-14"
+output: html_document
+---
+
+Firstly,we use Manual 09 to generate gaussian mixture f.
+The two functions below allow for random number generation and density evaluation for the Gaussian mixture distribution
+$$f(x) = (1-\tau) \varphi_{\mu_1,\sigma_1^2}(x) + \tau\varphi_{\mu_2,\sigma_2^2}(x).$$
+
+```{r use Manual 09 to generate gaussian mixture f}
+rmixnorm <- function(N, mu1, mu2, sigma1, sigma2, tau){
+  ind <- I(runif(N) > tau)
+  X <- rep(0,N)
+  X[ind] <- rnorm(sum(ind), mu1, sigma1)
+  X[!ind] <- rnorm(sum(!ind), mu2, sigma2)
+  return(X)
+}
+
+dmixnorm <- function(x, mu1, mu2, sigma1, sigma2, tau){
+  y <- (1-tau)*dnorm(x,mu1,sigma1) + tau*dnorm(x,mu2,sigma2)
+  return(y)
+}
+```
+
+Now we realize the function (with N=100) and get its density function.
+
+```{r realize the function (with N=100)and get its density function}
+mu1 <- 3
+mu2 <- 0
+sigma1 <- 0.5
+sigma2 <- 1
+tau <- 0.6
+N <- 100
+X <- rmixnorm(N, mu1, mu2, sigma1, sigma2, tau)
+x <- seq(-3,6,by=0.01)
+fx <- dmixnorm(x, mu1, mu2, sigma1, sigma2, tau)
+hist(X,freq=F)
+points(x,fx,type="l")
+```
+Now we perform the density estimation. At the first step, we just run for one time and see how estimation function varies with Bandwidth and Kernal.
+```{r perform density estimation}
+density_my = X
+plot_kdes <- function(bw){
+  y_true<-  dmixnorm(f_hat$x, mu1, mu2, sigma1, sigma2, tau)
+  f_hat_g <-density(X,kernel = 'gaussian',bw=bw)
+  y_hat_g <-f_hat_g$y
+  error_g <- mean((y_true-y_hat_g)^2)
+  
+  f_hat_e <-density(X,kernel = 'epanechnikov',bw=bw)
+  y_hat_e <-f_hat_e$y
+  error_e <- mean((y_true-y_hat_e)^2)
+  
+  f_hat_r <-density(X,kernel = 'rectangular',bw=bw)
+  y_hat_r <-f_hat_r$y
+  error_r <- mean((y_true-y_hat_r)^2)
+  
+  plot(density(density_my, kernel="gaussian", bw=bw),
+       main=paste("BW=",bw,"MSE:g=",round(error_g,5),":e=",round(error_e,5),":r=",round(error_r,5)), xlab="time [min]")
+  lines(density(density_my, kernel="epanechnikov", bw=bw), col=4)
+  lines(density(density_my, kernel="rectangular", bw=bw), col=2)
+  legend("topleft", col=c(1, 4, 2), lty=1, cex =0.45, legend=c("Gauss", "Epan", "rect"))
+}
+par(mfrow=c(3,2), mar = c(3.2, 3, 1.6, 0.2))
+for (i in seq(0.1,0.9,by = 0.05)){
+plot_kdes(i)
+  }
+```
+From the pictures above, we can conclude that the difference brought about by Bandwidth is far more pronounced than the difference brought about by different kernel.
+At the second step,we'll run the code for 200 times and 
+```{r 200}
+density_my = X
+calculate <- function(){
+error_g <-c()
+error_r <-c()
+error_e <-c()
+for (bw in seq(0.1,0.9,by = 0.05)){
+  mse_g <- 0
+  mse_e <- 0
+  mse_r <- 0
+  for (i in c(1:200)){
+  y_true<-  dmixnorm(f_hat$x, mu1, mu2, sigma1, sigma2, tau)
+  f_hat_g <-density(X,kernel = 'gaussian',bw=bw)
+  y_hat_g <-f_hat_g$y
+  error_1 <- mean((y_true-y_hat_g)^2)
+  mse_g = mse_g +error_1
+  
+  f_hat_e <-density(X,kernel = 'epanechnikov',bw=bw)
+  y_hat_e <-f_hat_e$y
+  error_2 <- mean((y_true-y_hat_e)^2)
+  mse_e = mse_e +error_2
+  
+  f_hat_r <-density(X,kernel = 'rectangular',bw=bw)
+  y_hat_r <-f_hat_r$y
+  error_3 <- mean((y_true-y_hat_r)^2)
+  mse_r = mse_r + error_3
+  }
+  mse_g = mse_g /200
+  error_g<- append(error_g,mse_g)
+  mse_e = mse_e/200
+  error_e<-append(error_e,mse_e)
+  mse_r = mse_r/200
+  error_r<-append(error_r,mse_r)
+  }
+  result = list(error_g,error_e,error_r)
+  return (result)
+}
+```
+
+Here we create a data.frame to receive the MSE results.
+```{r}
+MSE_g = unlist(a[1])
+MSE_r = unlist(a[2])
+MSE_e = unlist(a[3])
+MSE<-data.frame(x_,MSE_g,MSE_r,MSE_e);MSE
+
+```
+Plot to see MSE of function with different Kernel and Bandwidth.
+```{r}
+plot(MSE_g~x_,pch=15,cex=0.8,col="DarkTurquoise",ylab="MSE",xlab = "BandWidth",ylim = c(0,0.01),main="MSE of function with different Kernal and Bandwidth")
+points(x_,MSE_r,pch=16,col="DeepPink",cex=0.8)
+points(x_,MSE_e,pch=17,col="RosyBrown",cex=0.8)
+legend(0.7,0.0075,c("Gauss","Epan","Eect"),cex =0.5,col=c("DarkTurquoise","DeepPink","RosyBrown"),text.col=c("DarkTurquoise","DeepPink","RosyBrown"),pch=c(15,16,17),lty=c(1,2,3))
+```
+From the picture above, We can prove that the previous conclusion that the difference brought about by Bandwidth is far more pronounced than the difference brought about by different kernel is correct.
