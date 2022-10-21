@@ -95,8 +95,8 @@ server <- function(input, output) {
         
         plot(x_grid,sin(1/(x_grid/3+0.1)))
         abline(v =x_single ,col = "blue")
-        abline(v =x_single-result, col="yellow")
-        abline(v = x_single+result,col = "yellow")
+        abline(v =x_single-result, col="red")
+        abline(v = x_single+result,col = "red")
         
         
         #bins <- seq(min(x), max(x), length.out = input$bins + 1)
