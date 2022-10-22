@@ -12,7 +12,7 @@ library(shiny)
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("How h_opt(x) behaves depending on the following parameter"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
