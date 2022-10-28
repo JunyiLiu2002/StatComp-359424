@@ -1,0 +1,75 @@
+---
+title: "Assignment4"
+author: "Junyi_Liu"
+date: "2022-10-28"
+output: html_document
+---
+
+In this assignment, we try to find the best bandwidth and the best degree to minimize the Cross-Validation.
+
+```{r import the packages and the dataset we need}
+library(MASS)
+library(locpol)
+library(ibr)
+data(mcycle)
+mcycle <- mcycle[mcycle$times <=40,]
+plot(mcycle$times,mcycle$accel)
+```
+```{r randomlize the data for further useage}
+k_folder<- 4
+p_range <-seq(1,3,1)
+h_range <-seq(3,15,1)
+index_raw <- seq(1,nrow(mcycle))
+index_new <- sample(index_raw)
+mcycle <- mcycle[index_new,]
+fol <- matrix(1:nrow(mcycle), ncol =4)
+```
+
+
+```{r use the loop(of h and p) to find the best bandwidth and degree to minimize the Cross-validation}
+result_inner_list <-c()
+CV_list <-c()
+for (p in p_range)
+  {
+  for (h in h_range)
+    {
+    for (i in 1:4)
+      {
+      my_data_train_x <-mcycle[-fol[,i],]$times
+      my_data_train_y <-mcycle[-fol[,i],]$accel
+      my_data_test_x <-mcycle[fol[,i],]$times
+      my_data_test_y <-mcycle[fol[,i],]$accel
+      my_data_test <-mcycle[fol[,i],]
+#my_model <- npregress(my_data_train_x, my_data_train_y, bandwidth=h,kernel="g",control.par=list(degree=p))
+#value1 <- predict(my_model,my_data_test_x)
+
+my_model<-locpol(my_data_train_y~my_data_train_x,mcycle,bw=h,deg=p,xeval=my_data_test_x)
+value1 <-my_model$lpFit$my_data_train_y
+my_data_test <-my_data_test[with(my_data_test,order(times)),]
+
+difference <- (my_data_test$accel-value1)^2
+result_inner <- sum(difference)/28
+result_inner_list <- append(result_inner_list,result_inner)
+    }
+    CV<-0.25*sum(result_inner_list)
+    result_inner_list<-c()
+    CV_list<-append(CV_list,CV)
+  }
+}
+```
+Notice:Here we may run into issues for large p and small h since we use #folder equals to 4.
+```{r show the CV list}
+CV_list
+
+```
+
+```{r search the best bw and beg}
+best<-which.min(CV_list)
+deg <-as.integer(best/13)+1
+bw <-best %% 13+2
+print(bw)
+print(deg)
+```
+According to the calculation above, we can point that the best bandwidth and degree for a local polynomial smoother.
+
+Note that here for calculation,when the result of 'best %% 13' equals to 0,the real bandwidth is 15 rather than 2. However, according to the Assignment we have done before,it is easily to point that the minimize MSE will not occur in the longest(end) bandwidth situation. So actually we will not face the problem above, this really make the work to find the best bandwidth easier!
