@@ -7,7 +7,9 @@
 #    http://shiny.rstudio.com/
 #
 library(shiny)
-
+library(ggplot2)
+#library(ggpubr)
+library(egg)
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
@@ -92,12 +94,17 @@ server <- function(input, output) {
         y <- y_pre +e
         result = hopt(x_single,n,shape1,shape2)
         
-        
-        plot(x_grid,sin(1/(x_grid/3+0.1)))
-        abline(v =x_single ,col = "blue")
-        abline(v =x_single-result, col="red")
-        abline(v = x_single+result,col = "red")
-        
+        p1 <- ggplot()+geom_point(mapping = aes(x_grid,y = sin(1/(x_grid/3+0.1))))+
+        geom_vline(xintercept = x_single, linetype="dotted",color = "blue")+
+        geom_vline(xintercept = x_single-result,color = "red")+
+        geom_vline(xintercept = x_single+result,color = "red")
+        #plot(x_grid,sin(1/(x_grid/3+0.1)))
+        #abline(v =x_single ,col = "blue")
+        #abline(v =x_single-result, col="red")
+        #abline(v = x_single+result,col = "red")
+      
+        p2 <- ggplot()+geom_line(mapping=aes(x_grid,dbeta(x_grid,shape1,shape2)))+geom_vline(xintercept = x_single,linetype="dotted",color = "blue")
+        ggarrange(p1,p2,heights = c(2,1))
         
         #bins <- seq(min(x), max(x), length.out = input$bins + 1)
 
