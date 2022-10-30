@@ -1,0 +1,2 @@
+https://data.worldbank.org/indicator/SP.POP.BRTH.MF?end=2020&start=2020&type=shaded&view=map
+https://data.un.org/Data.aspx?d=PopDiv&f=variableID%3A52

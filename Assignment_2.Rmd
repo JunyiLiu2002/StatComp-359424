@@ -5,9 +5,7 @@ date: "2022-10-14"
 output: html_document
 ---
 
-Firstly,we use Manual 09 to generate gaussian mixture f.
-The two functions below allow for random number generation and density evaluation for the Gaussian mixture distribution
-$$f(x) = (1-\tau) \varphi_{\mu_1,\sigma_1^2}(x) + \tau\varphi_{\mu_2,\sigma_2^2}(x).$$
+Firstly,we use Manual 09 to generate gaussian mixture f. The two functions below allow for random number generation and density evaluation for the Gaussian mixture distribution $$f(x) = (1-\tau) \varphi_{\mu_1,\sigma_1^2}(x) + \tau\varphi_{\mu_2,\sigma_2^2}(x).$$
 
 ```{r use Manual 09 to generate gaussian mixture f}
 rmixnorm <- function(N, mu1, mu2, sigma1, sigma2, tau){
@@ -39,7 +37,9 @@ fx <- dmixnorm(x, mu1, mu2, sigma1, sigma2, tau)
 hist(X,freq=F)
 points(x,fx,type="l")
 ```
+
 Now we perform the density estimation. At the first step, we just run for one time and see how estimation function varies with Bandwidth and Kernel.
+
 ```{r perform density estimation}
 density_my = X
 plot_kdes <- function(bw){
@@ -69,8 +69,9 @@ for (i in seq(0.1,0.9,by = 0.05)){
 plot_kdes(i)
   }
 ```
-From the pictures above, we can conclude that the difference brought about by Bandwidth is far more pronounced than the difference brought about by different kernel.
-At the second step,we'll run the code for 200 times and 
+
+From the pictures above, we can conclude that the difference brought about by Bandwidth is far more pronounced than the difference brought about by different kernel. At the second step,we'll run the code for 200 times and
+
 ```{r 200}
 density_my = X
 calculate <- function(){
@@ -115,6 +116,7 @@ for (bw in seq(0.1,0.9,by = 0.05)){
 ```
 
 Here we create a data.frame to receive the MSE results.
+
 ```{r}
 a=calculate()
 x_ = seq(0.1,0.9,by = 0.05)
@@ -124,11 +126,14 @@ MSE_e = unlist(a[3])
 MSE<-data.frame(x_,MSE_g,MSE_r,MSE_e);MSE
 
 ```
+
 Plot to see MSE of function with different Kernel and Bandwidth.
+
 ```{r}
 plot(MSE_g~x_,pch=15,cex=0.8,col="DarkTurquoise",ylab="Error",xlab = "BandWidth",ylim = c(0,0.005),main="Error of function with different Kernal and Bandwidth")
 points(x_,MSE_r,pch=16,col="DeepPink",cex=0.8)
 points(x_,MSE_e,pch=17,col="RosyBrown",cex=0.8)
 legend(0.6,0.004,c("Gauss","Epan","Eect"),cex =0.5,col=c("DarkTurquoise","DeepPink","RosyBrown"),text.col=c("DarkTurquoise","DeepPink","RosyBrown"),pch=c(15,16,17),lty=c(1,2,3))
 ```
+
 From the picture above, We can prove that the previous conclusion that the difference brought about by Bandwidth is far more pronounced than the difference brought about by different kernel is correct.
