@@ -1,0 +1,174 @@
+---
+title: "Assignment5"
+author: "Junyi_Liu"
+date: "2022-11-04"
+output: html_document
+---
+
+The functions below shows the form of Gaussian mixture distribution, which we will use for simulation of EM.
+$$f(x) = (1-\tau) \varphi_{\mu_1,\sigma_1^2}(x) + \tau\varphi_{\mu_2,\sigma_2^2}(x).$$
+
+```{r}
+rmixnorm <- function(N, mu1, mu2, sigma1, sigma2, tau){
+  ind <- I(runif(N) > tau)
+  X <- rep(0,N)
+  X[ind] <- rnorm(sum(ind), mu1, sigma1)
+  X[!ind] <- rnorm(sum(!ind), mu2, sigma2)
+  return(X)
+}
+
+dmixnorm <- function(x, mu1, mu2, sigma1, sigma2, tau){
+  y <- (1-tau)*dnorm(x,mu1,sigma1) + tau*dnorm(x,mu2,sigma2)
+  return(y)
+}
+```
+
+A sample call is below.
+
+```{r echo=FALSE,fig.width=5,fig.height=6}
+mu1 <- 3
+mu2 <- 0
+sigma1 <- 0.5
+sigma2 <- 1
+tau <- 0.6
+N<-1000
+
+X <- rmixnorm(N, mu1, mu2, sigma1, sigma2, tau)
+x <- seq(-3,6,by=0.01)
+fx <- dmixnorm(x, mu1, mu2, sigma1, sigma2, tau)
+hist(X,freq=F)
+points(x,fx,type="l")
+```
+Now we will try to use EM algorithm to estimate the parameters of the given distribution and see the accuracy of the estimation. Additionally, the sensitivity depends on the starting point will be tested.
+Firstly,we define a function to calculate the log likelihood.
+```{r}
+loglike <-function(X,mu1,mu2,sigma1,sigma2,tau){
+  k <-sum(log((1-tau)*dnorm(X,mu1,sigma1)+tau*dnorm(X,mu2,sigma2)))
+  return(k)
+}
+```
+Then we define a function called 'EM' to realize the 'E' and 'M' step.
+
+```{r}
+EM <-function(X,mu1,mu2,sigma1,sigma2,tau,N){#last time values
+  p = dnorm(X,mu2,sigma2)*tau/dmixnorm(X, mu1, mu2, sigma1, sigma2, tau)
+  tau_hat <- sum(p)/N
+  mu1_hat <- sum((1-p)*X)/(N-sum(p))
+  mu2_hat <-sum(p*X)/sum(p)
+  sigma1_hat <-sqrt(sum((1-p)*(X-mu1)^2)/sum(1-p))
+  sigma2_hat <-sqrt(sum(p*(X-mu2)^2)/sum(p))
+  loglikehood <-loglike(X,mu1_hat,mu2_hat,sigma1_hat,sigma2_hat,tau_hat)
+  theta_new <- c(mu1_hat,mu2_hat,sigma1_hat,sigma2_hat,tau_hat,loglikehood)
+  return(theta_new)
+} 
+```
+Now,based on the 'EM' function and starting point, we repeat the 'EM' function until the result of log likelihood converges.  
+
+```{r}
+mu1_l <-c(3)
+mu2_l <-c(0)
+sigma1_l <-c(0.5)
+sigma2_l <-c(1)
+tau_l <-c(0.6)
+lik_now <-1
+k_initial <-loglike(X,0,0,1,1,0.2)
+k <- 2
+l <- 0
+l[k] <- k_initial
+while(abs(l[k]-l[k-1]) >= 10^(-6)){
+  mydata_raw <-EM(X,tail(mu1_l,1),tail(mu2_l,1),tail(sigma1_l,1),tail(sigma2_l,1),tail(tau_l,1),N)
+  mu1_l<-append(mu1_l,mydata_raw[1])
+  mu2_l<-append(mu2_l,mydata_raw[2])
+  sigma1_l<-append(sigma1_l,mydata_raw[3])
+  sigma2_l<-append(sigma2_l,mydata_raw[4])
+  tau_l <- append(tau_l,mydata_raw[5])
+  
+  lik_now <- mydata_raw[6]
+  k = k+1
+  l[k] = lik_now
+}
+```
+Here, we use a plot to see if the parameters are approximately correct. The black one is the true one and the blue one is based on the results of the 'EM'. 
+```{r echo=FALSE,fig.width=5,fig.height=6}
+x <- seq(-3,6,by=0.01)
+fx1 <- dmixnorm(x, mu1, mu2, sigma1, sigma2, tau)
+fx2 <-dmixnorm(x,tail(mu1_l,1),tail(mu2_l,1),tail(sigma1_l,1),tail(sigma2_l,1),tail(tau_l,1))
+hist(X,freq=F)
+points(x,fx1,type="l")
+points(x,fx2,type="l",col="blue")
+```
+Additionally, I'd like to figure out how sensitive is my algorithm from different starting point.
+Now, we start from a little further:
+```{r}
+mu1_l <-c(3.5)
+mu2_l <-c(0.3)
+sigma1_l <-c(0.4)
+sigma2_l <-c(1.3)
+tau_l <-c(0.7)
+lik_now <-1
+k_initial <-loglike(X,0,0,1,1,0.2)
+k <- 2
+l <- 0
+l[k] <- k_initial
+while(abs(l[k]-l[k-1]) >= 10^(-6)){
+  mydata_raw <-EM(X,tail(mu1_l,1),tail(mu2_l,1),tail(sigma1_l,1),tail(sigma2_l,1),tail(tau_l,1),N)
+  mu1_l<-append(mu1_l,mydata_raw[1])
+  mu2_l<-append(mu2_l,mydata_raw[2])
+  sigma1_l<-append(sigma1_l,mydata_raw[3])
+  sigma2_l<-append(sigma2_l,mydata_raw[4])
+  tau_l <- append(tau_l,mydata_raw[5])
+  
+  lik_now <- mydata_raw[6]
+  k = k+1
+  l[k] = lik_now
+}
+```
+
+```{r echo=FALSE,fig.width=5,fig.height=6}
+x <- seq(-3,6,by=0.01)
+fx1 <- dmixnorm(x, mu1, mu2, sigma1, sigma2, tau)
+fx2 <-dmixnorm(x,tail(mu1_l,1),tail(mu2_l,1),tail(sigma1_l,1),tail(sigma2_l,1),tail(tau_l,1))
+hist(X,freq=F)
+points(x,fx1,type="l")
+points(x,fx2,type="l",col="red")
+```
+
+It seems that it still works well.
+Now,much further:
+
+```{r}
+mu1_l <-c(0)
+mu2_l <-c(0)
+sigma1_l <-c(1)
+sigma2_l <-c(1)
+tau_l <-c(0.2)
+lik_now <-1
+k_initial <-loglike(X,0,0,1,1,0.2)
+k <- 2
+l <- 0
+l[k] <- k_initial
+while(abs(l[k]-l[k-1]) >= 10^(-6)){
+  mydata_raw <-EM(X,tail(mu1_l,1),tail(mu2_l,1),tail(sigma1_l,1),tail(sigma2_l,1),tail(tau_l,1),N)
+  mu1_l<-append(mu1_l,mydata_raw[1])
+  mu2_l<-append(mu2_l,mydata_raw[2])
+  sigma1_l<-append(sigma1_l,mydata_raw[3])
+  sigma2_l<-append(sigma2_l,mydata_raw[4])
+  tau_l <- append(tau_l,mydata_raw[5])
+  
+  lik_now <- mydata_raw[6]
+  k = k+1
+  l[k] = lik_now
+}
+```
+
+
+```{r echo=FALSE,fig.width=5,fig.height=6}
+x <- seq(-3,6,by=0.01)
+fx1 <- dmixnorm(x, mu1, mu2, sigma1, sigma2, tau)
+fx2 <-dmixnorm(x,tail(mu1_l,1),tail(mu2_l,1),tail(sigma1_l,1),tail(sigma2_l,1),tail(tau_l,1))
+hist(X,freq=F)
+points(x,fx1,type="l")
+points(x,fx2,type="l",col="green")
+```
+
+Now we can point that this is a bad starting point where the algorithm fails!
