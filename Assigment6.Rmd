@@ -1,0 +1,136 @@
+---
+title: "Assignment6"
+author: "Junyi_Liu"
+date: "2022-11-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this Assignment, we will compare the three methods to generate the random number in two ways: sampling time and quality of the sample.
+```{r set seed}
+set.seed(42)
+```
+Firstly, we will use 'rnorm' method and repeat the process 50 times.
+```{r rnorm}
+delta_t_list_rnorm = c()
+KS_stats_list_rnorm = c()
+for (i in seq(1,50,by = 1)){
+t0 = Sys.time()
+X <- rnorm(10^5)
+t1 = Sys.time()
+delta_t = t1-t0
+delta_t_list_rnorm<-append(delta_t_list_rnorm,delta_t)
+
+F_hat <- ecdf(X)
+F_hat_eval <-F_hat(sort(X))
+F_eval <- pnorm(sort(X))
+KS_stats <-max(abs(F_hat_eval- F_eval))
+KS_stats_list_rnorm<-append(KS_stats_list_rnorm,KS_stats)
+}
+```
+Secondly, we will use 'Box-Muler transform' method and repeat the process 50 times as well.(Here we conbine the Z1 and Z2.)
+```{r BOX}
+delta_t_list_box = c()
+KS_stats_list_box = c()
+for (i in seq(1,50,by = 1)){
+t0 = Sys.time()
+U1 = runif(10^5/2)
+U2 = runif(10^5/2)
+Z1 = sqrt(-2*log(U1))*cos(2*pi*U2)
+Z2 = sqrt(-2*log(U1))*sin(2*pi*U2)
+t1 = Sys.time()
+delta_t = t1-t0
+delta_t_list_box<-append(delta_t_list_box,delta_t)
+
+Z = c(Z1,Z2)
+F_hat <- ecdf(Z)
+F_hat_eval <-F_hat(sort(Z))
+F_eval <- pnorm(sort(Z))
+KS_stats <-max(abs(F_hat_eval- F_eval))
+KS_stats_list_box<-append(KS_stats_list_box,KS_stats)
+}
+```
+
+Now, for the last method--'rejection sampling' and time consuming here will be much more.
+```{r rejection sampling}
+delta_t_list_reject = c()
+KS_stats_list_reject = c()
+for (i in seq(1,50,by = 1)){
+
+M <- optimize(f=function(x){dnorm(x)/dexp(abs(x))*2}, interval=c(0,5),maximum=T)$objective
+
+# returns a single accepted sample from standard doubly exp. proposal and N(0,1) target
+acc_rej_dexp_norm <- function(M,a,b){
+  U <- runif(1)*M
+  sings <- c(-1,1)
+  Y <- rexp(1)*sample(sings,1) # doubly exponential
+  while (U>dnorm(Y)/dexp(abs(Y))/2/M){
+    U <- runif(1)*M
+    Y <- rexp(1)*sample(sings,1)
+  }
+  return(Y)
+}
+
+N <- 10^5
+X_reject <- rep(0,N)
+t0 = Sys.time()
+for(n in 1:N){
+  X_reject[n] <- acc_rej_dexp_norm(M,a,b)
+}
+t1 = Sys.time()
+delta_t = t1-t0
+delta_t_list_reject<-append(delta_t_list_reject,delta_t)
+
+F_hat <- ecdf(X_reject)
+F_hat_eval <-F_hat(sort(X_reject))
+F_eval <- pnorm(sort(X_reject))
+KS_stats <-max(abs(F_hat_eval- F_eval))
+KS_stats_list_reject<-append(KS_stats_list_reject,KS_stats)
+}
+```
+
+```{r}
+KS_rnorm = mean(KS_stats_list_rnorm)
+KS_box = mean(KS_stats_list_box)
+KS_reject = mean(KS_stats_list_reject)
+
+delta_t_rnorm = mean(delta_t_list_rnorm)
+delta_t_box = mean(delta_t_list_box)
+delta_t_reject = mean(delta_t_list_reject)
+
+```
+The sampling time used for 'rnorm' is:
+
+```{r}
+print(delta_t_rnorm)
+```
+The sampling time used for 'Box-Muler transform' is:
+```{r}
+print(delta_t_box)
+```
+The sampling time used for 'rejection sampling' is:
+```{r}
+print(delta_t_reject)
+```
+To draw a conclusion, for the same sample size,the time used for 'rnorm' is the least,time for 'Box-Muler transform' is the second least and the time for 'rejection sampling' is the most---around 10 seconds!
+
+Now we talk about the quality of the number, identifying by the KS statistic.
+KS statistic for the 'rnorm' is:
+```{r}
+print(KS_rnorm)
+```
+
+KS statistic for the 'Box-Muler transform' is:
+```{r}
+print(KS_box)
+```
+
+KS statistic for the 'rejection sampling' is:
+```{r}
+print(KS_reject)
+```
+
+To draw a conclusion, for the same sample size,the quality for the three methods is nearly the same. The smaller the KS statistic is ,the better quality it will have.
