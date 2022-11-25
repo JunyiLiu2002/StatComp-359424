@@ -5,10 +5,6 @@ date: "2022-11-18"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 In this Assignment, we will compare the three methods to generate the random number in two ways: sampling time and quality of the sample.
 ```{r set seed}
 set.seed(42)
@@ -74,7 +70,7 @@ acc_rej_dexp_norm <- function(M,a,b){
   return(Y)
 }
 
-N <- 10^5
+N <- 10^4
 X_reject <- rep(0,N)
 t0 = Sys.time()
 for(n in 1:N){
@@ -91,46 +87,28 @@ KS_stats <-max(abs(F_hat_eval- F_eval))
 KS_stats_list_reject<-append(KS_stats_list_reject,KS_stats)
 }
 ```
+Here we print the result of KS.
+```{r print result for KS}
+mean(KS_stats_list_rnorm)
+sd(KS_stats_list_rnorm)
 
-```{r}
-KS_rnorm = mean(KS_stats_list_rnorm)
-KS_box = mean(KS_stats_list_box)
-KS_reject = mean(KS_stats_list_reject)
+mean(KS_stats_list_box)
+sd(KS_stats_list_box)
 
-delta_t_rnorm = mean(delta_t_list_rnorm)
-delta_t_box = mean(delta_t_list_box)
-delta_t_reject = mean(delta_t_list_reject)
-
+mean(KS_stats_list_reject)
+sd(KS_stats_list_reject)
 ```
-The sampling time used for 'rnorm' is:
+To draw a conclusion, for the same sample size,the quality for the 'rnorm' and 'Box-Muler transform' are nearly the same, while the KS of 'rejection sampling' is larger. The smaller the KS statistic is ,the better quality it will have.
 
-```{r}
-print(delta_t_rnorm)
-```
-The sampling time used for 'Box-Muler transform' is:
-```{r}
-print(delta_t_box)
-```
-The sampling time used for 'rejection sampling' is:
-```{r}
-print(delta_t_reject)
-```
-To draw a conclusion, for the same sample size,the time used for 'rnorm' is the least,time for 'Box-Muler transform' is the second least and the time for 'rejection sampling' is the most---around 10 seconds!
+Now, we need to print the result of time.
+```{r print result for t}
+mean(delta_t_list_rnorm)
+sd(delta_t_list_rnorm)
 
-Now we talk about the quality of the number, identifying by the KS statistic.
-KS statistic for the 'rnorm' is:
-```{r}
-print(KS_rnorm)
-```
+mean(delta_t_list_box)
+sd(delta_t_list_box)
 
-KS statistic for the 'Box-Muler transform' is:
-```{r}
-print(KS_box)
+mean(delta_t_list_reject)
+sd(delta_t_list_reject)
 ```
-
-KS statistic for the 'rejection sampling' is:
-```{r}
-print(KS_reject)
-```
-
-To draw a conclusion, for the same sample size,the quality for the three methods is nearly the same. The smaller the KS statistic is ,the better quality it will have.
+To draw a conclusion, for the same sample size,the time used for 'rnorm' is the least,time for 'Box-Muler transform' is the second least and the time for 'rejection sampling' is the most---around 2 seconds!

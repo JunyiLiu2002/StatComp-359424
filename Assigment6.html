@@ -424,7 +424,7 @@ acc_rej_dexp_norm &lt;- function(M,a,b){
   return(Y)
 }
 
-N &lt;- 10^5
+N &lt;- 10^4
 X_reject &lt;- rep(0,N)
 t0 = Sys.time()
 for(n in 1:N){
@@ -440,38 +440,39 @@ F_eval &lt;- pnorm(sort(X_reject))
 KS_stats &lt;-max(abs(F_hat_eval- F_eval))
 KS_stats_list_reject&lt;-append(KS_stats_list_reject,KS_stats)
 }</code></pre>
-<pre class="r"><code>KS_rnorm = mean(KS_stats_list_rnorm)
-KS_box = mean(KS_stats_list_box)
-KS_reject = mean(KS_stats_list_reject)
-
-delta_t_rnorm = mean(delta_t_list_rnorm)
-delta_t_box = mean(delta_t_list_box)
-delta_t_reject = mean(delta_t_list_reject)</code></pre>
-<p>The sampling time used for ‘rnorm’ is:</p>
-<pre class="r"><code>print(delta_t_rnorm)</code></pre>
-<pre><code>## Time difference of 0.01134908 secs</code></pre>
-<p>The sampling time used for ‘Box-Muler transform’ is:</p>
-<pre class="r"><code>print(delta_t_box)</code></pre>
-<pre><code>## Time difference of 0.01854224 secs</code></pre>
-<p>The sampling time used for ‘rejection sampling’ is:</p>
-<pre class="r"><code>print(delta_t_reject)</code></pre>
-<pre><code>## Time difference of 10.81524 secs</code></pre>
+<p>Here we print the result of KS.</p>
+<pre class="r"><code>mean(KS_stats_list_rnorm)</code></pre>
+<pre><code>## [1] 0.002779558</code></pre>
+<pre class="r"><code>sd(KS_stats_list_rnorm)</code></pre>
+<pre><code>## [1] 0.0009696093</code></pre>
+<pre class="r"><code>mean(KS_stats_list_box)</code></pre>
+<pre><code>## [1] 0.002676157</code></pre>
+<pre class="r"><code>sd(KS_stats_list_box)</code></pre>
+<pre><code>## [1] 0.0009281589</code></pre>
+<pre class="r"><code>mean(KS_stats_list_reject)</code></pre>
+<pre><code>## [1] 0.0082119</code></pre>
+<pre class="r"><code>sd(KS_stats_list_reject)</code></pre>
+<pre><code>## [1] 0.002022547</code></pre>
+<p>To draw a conclusion, for the same sample size,the quality for the
+‘rnorm’ and ‘Box-Muler transform’ are nearly the same, while the KS of
+‘rejection sampling’ is larger. The smaller the KS statistic is ,the
+better quality it will have.</p>
+<p>Now, we need to print the result of time.</p>
+<pre class="r"><code>mean(delta_t_list_rnorm)</code></pre>
+<pre><code>## Time difference of 0.01533403 secs</code></pre>
+<pre class="r"><code>sd(delta_t_list_rnorm)</code></pre>
+<pre><code>## [1] 0.004791842</code></pre>
+<pre class="r"><code>mean(delta_t_list_box)</code></pre>
+<pre><code>## Time difference of 0.01960555 secs</code></pre>
+<pre class="r"><code>sd(delta_t_list_box)</code></pre>
+<pre><code>## [1] 0.00287803</code></pre>
+<pre class="r"><code>mean(delta_t_list_reject)</code></pre>
+<pre><code>## Time difference of 1.44633 secs</code></pre>
+<pre class="r"><code>sd(delta_t_list_reject)</code></pre>
+<pre><code>## [1] 0.2056591</code></pre>
 <p>To draw a conclusion, for the same sample size,the time used for
 ‘rnorm’ is the least,time for ‘Box-Muler transform’ is the second least
-and the time for ‘rejection sampling’ is the most—around 10 seconds!</p>
-<p>Now we talk about the quality of the number, identifying by the KS
-statistic. KS statistic for the ‘rnorm’ is:</p>
-<pre class="r"><code>print(KS_rnorm)</code></pre>
-<pre><code>## [1] 0.002779558</code></pre>
-<p>KS statistic for the ‘Box-Muler transform’ is:</p>
-<pre class="r"><code>print(KS_box)</code></pre>
-<pre><code>## [1] 0.002676157</code></pre>
-<p>KS statistic for the ‘rejection sampling’ is:</p>
-<pre class="r"><code>print(KS_reject)</code></pre>
-<pre><code>## [1] 0.002916926</code></pre>
-<p>To draw a conclusion, for the same sample size,the quality for the
-three methods is nearly the same. The smaller the KS statistic is ,the
-better quality it will have.</p>
+and the time for ‘rejection sampling’ is the most—around 2 seconds!</p>
 
 
 
