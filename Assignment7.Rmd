@@ -1,0 +1,63 @@
+---
+title: "Assignment7"
+author: "Junyi_Liu"
+date: "2022-12-02"
+output: html_document
+---
+
+```{r for loop to get the result}
+set.seed(42)
+count_b1 =0
+count_b2 =0
+count_b3 =0
+count_b4 =0
+for (i in 1:1000){
+N <-100
+X <-rexp(N,2)
+#for method one
+b1 <- mean(X)+sd(X)/sqrt(N)*qnorm(0.95)
+if(b1 > 1/2){
+  count_b1= count_b1+1
+}
+#for method two
+B <-1000
+boot_stat_b2 <-rep(0,B)
+for (b in 1:B){
+  Xb <- sample(X,N,replace = T)
+  boot_stat_b2[b] <- (mean(Xb)-mean(X))/sd(Xb)*sqrt(N)
+}
+b2 <- quantile(boot_stat_b2,.95)*sd(X)/sqrt(N)+mean(X)
+if(b2 > 1/2){
+  count_b2= count_b2+1
+}
+#for method three
+boot_stat_b3 <-rep(0,B)
+for (b in 1:B){
+  Xb <- sample(X,N,replace = T)
+  boot_stat_b3[b] <- (mean(Xb)-mean(X))*sqrt(N)
+}
+b3<- quantile(boot_stat_b3,.95)/sqrt(N)+mean(X)
+if(b3 > 1/2){
+  count_b3= count_b3+1
+}
+#for method 4
+boot_stat_b4 <-rep(0,B)
+for (b in 1:B){
+  Xb <- sample(X,N,replace = T)
+  boot_stat_b4[b] <- (mean(Xb)-mean(X))/sd(X)*sqrt(N)
+}
+b4<- quantile(boot_stat_b4,.95)/sqrt(N)*sd(X)+mean(X)
+if(b4 > 1/2){
+  count_b4= count_b4+1
+}
+}
+```
+
+```{r show in a tale}
+ result <- matrix(c(count_b1/1000,count_b2/1000,count_b3/1000,count_b4/1000),ncol=1,byrow=TRUE)
+ rownames(result) <- c("asymptotic","studentized","non-studentized","sample-truth-scaled")
+ colnames(result) <- c("persentage")
+ result
+```
+
+To draw the conclusion, we can say that all the results of the percentage whether 1/2 is covered in the CI(α = 0.05) are nearly 95%. However, there is a small difference between every method. According to the table, we can say that the performance of 'studentized' is the worst.
