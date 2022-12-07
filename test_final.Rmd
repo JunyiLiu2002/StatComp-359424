@@ -1,0 +1,153 @@
+---
+title: "test_final"
+author: "Junyi_Liu"
+date: "2022-11-20"
+output: html_document
+---
+
+```{r setting}
+set.seed(42)
+library(locpol)
+library(microbenchmark)
+library(ibr)
+library(fANCOVA)
+library(locfit)
+library(KernSmooth)
+```
+
+
+```{r generate data}
+x<-rnorm(500)
+y<-dnorm(x)+rnorm(500,sd=0.02)
+df <- data.frame (x=c(x),y =c(y))
+plot(x,y)
+```
+
+```{r}
+result = microbenchmark(
+locpol=my_model_locpol<-locpol(y~x,df),
+np=my_model_np <-npregress(x,y,criterion="rmse",bandwidth=NULL,kernel="g"),
+loess=my_model_loess <-loess(y~x,df),
+loess_as = loess.as(x,y),
+locpoly=my_model_locpoly<-locpoly(x,y,bandwidth = 2),
+locift = my_model_locfit <-locfit(y~x),
+#locpoly_smoother = my_model_locpoly_smoother <-locPolSmootherC(x,y,bw=2,),
+times = 10
+)
+#unit milliseconds
+```
+
+```{r}
+result_500 = result
+```
+
+
+```{r #200}
+x_200<-rnorm(200)
+y_200<-dnorm(x_200)+rnorm(200,sd=0.02)
+df_200 <- data.frame (x_200=c(x_200),y_200 =c(y_200))
+plot(x_200,y_200)
+```
+
+```{r result of #200}
+result_200 = microbenchmark(
+locpol=my_model_locpol<-locpol(y_200~x_200,df_200),
+np=my_model_np <-npregress(x_200,y_200,criterion="rmse",bandwidth=NULL,kernel="g"),
+loess=my_model_loess <-loess(y_200~x_200,df_200),
+loess_as = loess.as(x_200,y_200),
+locpoly=my_model_locpoly<-locpoly(x_200,y_200,bandwidth = 2),
+locift = my_model_locfit <-locfit(y_200~x_200),
+#locpoly_smoother = my_model_locpoly_smoother <-locPolSmootherC(x,y,bw=2,),
+times = 10
+)
+```
+
+```{r #100}
+x_100<-rnorm(100)
+y_100<-dnorm(x_100)+rnorm(100,sd=0.02)
+df_100 <- data.frame (x_100=c(x_100),y_100 =c(y_100))
+plot(x_100,y_100)
+```
+```{r result of #100}
+result_100 = microbenchmark(
+locpol=my_model_locpol<-locpol(y_100~x_100,df_100),
+np=my_model_np <-npregress(x_100,y_100,criterion="rmse",bandwidth=NULL,kernel="g"),
+loess=my_model_loess <-loess(y_100~x_100,df_100),
+loess_as = loess.as(x_100,y_100),
+locpoly=my_model_locpoly<-locpoly(x_100,y_100,bandwidth = 2),
+locift = my_model_locfit <-locfit(y_100~x_100),
+#locpoly_smoother = my_model_locpoly_smoother <-locPolSmootherC(x,y,bw=2,),
+times = 10
+)
+```
+
+```{r #50}
+x_50<-rnorm(50)
+y_50<-dnorm(x_50)+rnorm(50,sd=0.02)
+df_50 <- data.frame (x_50=c(x_50),y_50 =c(y_50))
+plot(x_50,y_50)
+```
+
+```{r result of #50}
+result_50 = microbenchmark(
+locpol=my_model_locpol<-locpol(y_50~x_50,df_50),
+np=my_model_np <-npregress(x_50,y_50,criterion="rmse",bandwidth=NULL,kernel="g"),
+loess=my_model_loess <-loess(y_50~x_50,df_50),
+loess_as = loess.as(x_50,y_50),
+locpoly=my_model_locpoly<-locpoly(x_50,y_50,bandwidth = 2),
+locift = my_model_locfit <-locfit(y_50~x_50),
+#locpoly_smoother = my_model_locpoly_smoother <-locPolSmootherC(x,y,bw=2,),
+times = 10
+)
+```
+
+```{r}
+  
+
+```
+
+
+```{r loop for speed}
+for (i in c(25,50,100,200,500)){
+  if(i==25){
+  x<-rnorm(i)
+  y<-dnorm(x)+rnorm(i,sd=0.02)
+  df <- data.frame (x=c(x),y=c(y))
+  plot(x,y)
+  
+  result = microbenchmark(
+  locpol=my_model_locpol<-locpol(y~x,df),
+  np=my_model_np<-npregress(x,y,criterion="rmse",bandwidth=NULL,kernel="g"),
+  loess=my_model_loess <-loess(y~x,df),
+  loess_as = loess.as(x,y),
+  locpoly=my_model_locpoly<-locpoly(x,y,bandwidth = 2),
+  locift = my_model_locfit <-locfit(y~x),
+  times = 10 )
+  a <-summary(result)
+  }
+  else{
+  x<-rnorm(i)
+  y<-dnorm(x)+rnorm(i,sd=0.02)
+  df <- data.frame (x=c(x),y=c(y))
+  plot(x,y)
+  
+  result_now = microbenchmark(
+  locpol=my_model_locpol<-locpol(y~x,df),
+  np=my_model_np<-npregress(x,y,criterion="rmse",bandwidth=NULL,kernel="g"),
+  loess=my_model_loess <-loess(y~x,df),
+  loess_as = loess.as(x,y),
+  locpoly=my_model_locpoly<-locpoly(x,y,bandwidth = 2),
+  locift = my_model_locfit <-locfit(y~x),
+  times = 10
+  )
+  b <-summary(result_now)
+  if(i==50){
+    result<-rbindlist(list(a,b))
+  }
+  else
+  {
+    result <-rbindlist(list(result,b))
+  }
+  }
+}
+```
