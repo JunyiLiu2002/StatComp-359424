@@ -60,4 +60,4 @@ if(b4 > 1/2){
  result
 ```
 
-To draw the conclusion, we can say that all the results of the percentage whether 1/2 is covered in the CI(α = 0.05) are nearly 95%. However, there is a small difference between every method. According to the table, we can say that the performance of 'studentized' is the worst.
+To draw the conclusion, we can say that all the results of the percentage whether 1/2 is covered in the CI(α = 0.05) are nearly 95%. However, there is a small difference between every method. According to the table, we can say that the performance of 'studentized' is the worst. The reason why 'studentized' is the worst is that we directly use sigma from the database, which introduce errors.
