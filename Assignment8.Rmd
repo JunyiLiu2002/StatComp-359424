@@ -1,0 +1,70 @@
+---
+title: "Assignment8"
+author: "Junyi_Liu"
+date: "2022-12-09"
+output: html_document
+---
+In this assignment, we will use MCMC to get a function and compare it with the true distribution to see the performance of our method.
+Here is the true distribution.
+```{r true posterior density}
+dposterior <- function(x,y,scale=1.2,sd=.6){
+  a <- 1/2*1/sd^2;c<-1/scale^2
+  erf <-function(x) 2*pnorm(x*sqrt(2))-1
+  k <- ifelse(x>=0,x*exp(-a*(x-y)^2-c*x^2),0)
+  n <-exp(-a*(y^2))*(sqrt(pi)*a*y*exp(a^2*y^2/(a+c))*(erf(a*y/sqrt(a+c))+1)+sqrt(a+c))/(2*(a+c)^(3/2))
+  k/n
+}
+```
+Now we define the 'prior' function and 'MCMC' function. 
+```{r}
+prior <- function(param){
+    return(dweibull(param,shape=2,scale = 1.2))
+}
+
+MCMC <-function(repeating_times,burn_in,y){
+  x_0 <-y#start point
+  my_data <- rep(0,(repeating_times+burn_in))
+  my_data[1] <- x_0
+  for (i in 1:(repeating_times+burn_in)){
+  new_x <- rnorm(1,mean=y, sd= 0.6)#posterior
+   alpha <- dnorm(y,mean = new_x,sd=0.6)*prior(new_x)*dnorm(x_0,mean =y,sd=0.6)/(prior(x_0)*dnorm(new_x,mean = y,sd=0.6)*dnorm(y,mean = x_0,sd=0.6))
+   compare <- runif(1,min=0,max=1)
+   if (compare >alpha){
+     x_0 <-x_0
+     my_data [i+1] <-x_0
+   }
+   else 
+     {x_0 <-new_x
+     my_data [i+1] <-x_0}
+    }
+  return(my_data)
+}
+```
+
+Pictures below show the difference between MCMC and True distribution when parameter y has different values.
+```{r}
+my_data_build <-MCMC(10000,1000,0.5)
+kde_1 <- density(my_data_build[1001:11000])
+kde_2 <- dposterior(seq(-2,4,by= 0.01),0.5)
+plot(kde_1,col = "green",ylim = c(0,1.2),main = "Difference Between MCMC and True (y =0.5)")
+lines(seq(-2,4,by= 0.01),kde_2,col = "red")
+legend(x= "topright",inset = 0.05,legend=c("True", "MCMC"), lwd=2,col=c("green","red"))
+```
+```{r}
+my_data_build <-MCMC(10000,1000,1)
+kde_1 <- density(my_data_build[1001:11000])
+kde_2 <- dposterior(seq(-2,4,by= 0.01),1)
+plot(kde_1,col = "green",ylim = c(0,1.2),main = "Difference Between MCMC and True (y =1)")
+lines(seq(-2,4,by= 0.01),kde_2,col = "red")
+legend(x= "topright",inset = 0.05,legend=c("True", "MCMC"), lwd=2,col=c("green","red"))
+```
+
+```{r}
+my_data_build <-MCMC(10000,1000,2)
+kde_1 <- density(my_data_build[1001:11000])
+kde_2 <- dposterior(seq(-2,4,by= 0.1),2)
+plot(kde_1,col = "green",ylim = c(0,1.2),main = "Difference Between MCMC and True (y =2)")
+lines(seq(-2,4,by= 0.1),kde_2,col = "red")
+legend(x= "topright",inset = 0.05,legend=c("True", "MCMC"), lwd=2,col=c("green","red"))
+```
+To conclude, we can say that the performance of MCMC is pretty good at different y values.
